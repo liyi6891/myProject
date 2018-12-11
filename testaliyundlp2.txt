@@ -1,0 +1,30 @@
+public static function query($api, $method, $urlParams = [], $bodyParams = [], $returnAsArray = true)
+    {
+        $popConfig = MCore_Tool_Conf::getDataConfigByEnv('mix', 'xhzy');
+        $accessKey = $popConfig['accessKey'];
+        $accessSecret = $popConfig['accessSecret'];
+        $client    = new GuzzleClient();
+        $client->setDefaultOption('allow_redirects', false);
+        $ts        = intval(microtime(true) * 1000);
+        $sig       = md5($accessSecret . $ts . $accessKey);
+        $urlParams = array_replace([
+            'access_key' => $accessKey,
+            'timestamp'  => $ts,
+            'signature'  => $sig,
+        ], $urlParams);
+
+        $url  = $api . '?' . http_build_query($urlParams);
+        $req  = $client->createRequest($method, $url, ['body' => json_encode($bodyParams)]);
+        $data = $client->send($req)->getBody()->getContents();
+
+        if ($returnAsArray) {
+            $data = json_decode($data, true);
+        }
+
+        return $data;
+    }
+	
+	
+	
+	test
+	
